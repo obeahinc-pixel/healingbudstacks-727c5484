@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          repository: obeahinc-pixel/healingbudstacks-9d585be6
 
       - name: Setup Node
         uses: actions/setup-node@v4
