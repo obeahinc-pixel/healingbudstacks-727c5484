@@ -385,28 +385,27 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     }
   }, [drGreenClient?.drgreen_client_id, fetchClient]);
 
-  // Bootstrap: wire auth listener FIRST, then hydrate from current session.
-  // This prevents the race where fetchClient runs before auth state is ready.
+// Initialize shop state on mount - fetch client and cart immediately
+  // Auth state changes after initial load will also trigger re-fetch
   useEffect(() => {
     let isMounted = true;
-    let initialFetchDone = false;
 
-    // 1. Register the auth state listener immediately
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // After the initial hydration fetch, react to auth changes
-      if (!initialFetchDone) return;
+    // Fetch data immediately without setTimeout to prevent race conditions
+    const initializeShop = async () => {
+      if (!isMounted) return;
+      fetchCart();
+      fetchClient();
+    };
+
+    // Run immediately on mount
+    initializeShop();
+
+    // Also listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, _session) => {
       if (!isMounted) return;
       fetchCart();
       fetchClient();
     });
-
-    // 2. One-shot bootstrap from current session (deferred to avoid deadlock)
-    setTimeout(() => {
-      if (!isMounted) return;
-      initialFetchDone = true;
-      fetchCart();
-      fetchClient();
-    }, 0);
 
     return () => {
       isMounted = false;
