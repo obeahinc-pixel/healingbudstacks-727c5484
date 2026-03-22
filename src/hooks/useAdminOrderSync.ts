@@ -280,6 +280,16 @@ export function useAdminOrderSync() {
       });
 
       if (result.error || !result.data) {
+        // DETAILED ERROR LOGGING - diagnose API failures
+        console.error('[SYNC_FAILURE] Order sync to Dr. Green API failed:', {
+          orderId: orderId.slice(0, 8) + '***',
+          clientId: clientId?.slice(0, 8) + '***',
+          error: result.error,
+          hasData: !!result.data,
+          itemsCount: items?.length || 0,
+          timestamp: new Date().toISOString(),
+        });
+        
         // Update local order with failure
         await supabase
           .from("drgreen_orders")

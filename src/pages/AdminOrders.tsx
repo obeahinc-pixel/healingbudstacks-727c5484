@@ -106,27 +106,14 @@ const AdminOrders = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, handleFilterChange]);
 
-  // Set up realtime subscription
+  // Realtime subscription disabled - was causing infinite flickering loop
+  // When sync fails, DB update triggers realtime → refetch → re-render (flash)
+  // Then sync fails again → goes back to step 1
+  // Users can now manually click Refresh button to update orders
   useEffect(() => {
-    const channel = supabase
-      .channel("admin-orders-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "drgreen_orders",
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
+    // Manual refresh only - prevents UI flickering
+    return () => {};
+  }, []);
 
   const handleViewOrder = (order: LocalOrder) => {
     setSelectedOrder(order);
